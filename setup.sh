@@ -48,7 +48,10 @@ echo ""
 if [ ! -f "$SCRIPT_DIR/.env" ]; then
     echo "⚠  No .env file found. Creating one from .env.example..."
     cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
-    echo "   → Edit $SCRIPT_DIR/.env and add your Discord webhook URL before monitoring starts."
+    echo "   → Edit $SCRIPT_DIR/.env and add your Discord webhook URL,"
+    echo "     or leave DISCORD_WEBHOOK_URL empty to run without Discord."
+    echo "   Then run this script again. The LaunchAgent was not installed or started."
+    exit 1
 else
     echo "✓ .env found"
 fi

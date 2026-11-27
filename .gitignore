@@ -1,9 +1,13 @@
 # Secret config — copy .env.example to .env and fill in your webhook
 .env
+.env.*
+!.env.example
 
 # Generated at runtime
 power_log.db
 power_log.db-journal
+power_log.db-wal
+power_log.db-shm
 *.log
 report.png
 
@@ -13,3 +17,7 @@ venv/
 # macOS
 .DS_Store
 .venv/
+
+# Python caches
+__pycache__/
+*.pyc

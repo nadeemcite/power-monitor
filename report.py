@@ -7,11 +7,14 @@ Run manually any time to see stats and generate charts.
 Usage:
     python3 report.py          # print summary + save report.png
     python3 report.py --text   # text-only, no charts
+    python3 report.py --demo   # made-up data, never touches power_log.db
 
-Requirements for charts:
-    pip3 install matplotlib --break-system-packages
+Requirements for charts (installed into venv/, which setup.sh also does):
+    python3 -m venv venv
+    venv/bin/python3 -m pip install -r requirements.txt
 """
 
+import random
 import sqlite3
 import sys
 from datetime import datetime
@@ -81,8 +84,44 @@ def print_summary(conn: sqlite3.Connection) -> list:
     return outages
 
 
+# ── Demo data ─────────────────────────────────────────────────────────────────
+def build_demo_db() -> sqlite3.Connection:
+    """In-memory database holding 30 days of made-up heartbeats and outages."""
+    from monitor import init_db, record_outage   # same schema as real data
+
+    rng     = random.Random(7)                   # fixed seed, repeatable output
+    first   = datetime(2026, 1, 1).timestamp()
+    hours   = [2, 7, 11, 14, 14, 15, 15, 16, 17, 21]
+    lengths = [6, 12, 20, 35, 50, 75, 140]       # minutes
+    cuts    = sorted(
+        (day * 1440 + rng.choice(hours) * 60 + rng.randrange(60), rng.choice(lengths))
+        for day in range(30)
+        for _ in range(rng.choice([0, 1, 1, 2]))
+    )
+
+    conn = sqlite3.connect(":memory:")
+    init_db(conn)
+
+    minutes = []   # minutes (since the first one) that have a heartbeat
+    resume  = 0
+    for begin, length in cuts:
+        if begin <= resume:                      # overlaps the previous cut
+            continue
+        minutes.extend(range(resume, begin + 1))
+        resume = begin + length
+        record_outage(conn, first + begin * 60, first + resume * 60)
+    minutes.extend(range(resume, max(30 * 1440, resume + 1)))
+
+    conn.executemany(
+        "INSERT INTO pings (timestamp) VALUES (?)",
+        ((first + m * 60,) for m in minutes),
+    )
+    conn.commit()
+    return conn
+
+
 # ── Charts ────────────────────────────────────────────────────────────────────
-def plot_charts(outages: list) -> None:
+def plot_charts(outages: list, title: str = "Power Monitor — Outage Analysis") -> None:
     try:
         import matplotlib
         matplotlib.use("Agg")          # no display needed; saves to file
@@ -101,7 +140,7 @@ def plot_charts(outages: list) -> None:
     durations = [o[3] / 60 for o in outages]   # minutes
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 9))
-    fig.suptitle("Power Monitor — Outage Analysis", fontsize=15, fontweight="bold", y=1.01)
+    fig.suptitle(title, fontsize=15, fontweight="bold", y=1.01)
 
     PALETTE = ["#E76F51", "#264653", "#2A9D8F", "#E9C46A"]
 
@@ -160,16 +199,24 @@ def plot_charts(outages: list) -> None:
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 def main() -> None:
-    if not DB_PATH.exists():
+    demo      = "--demo" in sys.argv
+    text_only = "--text" in sys.argv
+
+    if demo:
+        print("DEMO MODE: all data below is made up. power_log.db is not touched.")
+    elif not DB_PATH.exists():
         print("No database found. Start monitor.py first.")
         sys.exit(1)
 
-    text_only = "--text" in sys.argv
-
-    with sqlite3.connect(DB_PATH) as conn:
+    with (build_demo_db() if demo else sqlite3.connect(DB_PATH)) as conn:
         outages = print_summary(conn)
 
-    if not text_only:
+    if text_only:
+        return
+
+    if demo:
+        plot_charts(outages, "Power Monitor: Outage Analysis (synthetic demo data)")
+    else:
         plot_charts(outages)
 
 
