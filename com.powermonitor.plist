@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent template — setup.sh fills in PYTHON_PATH and SCRIPT_DIR
+  before installing to ~/Library/LaunchAgents/
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.powermonitor</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>PYTHON_PATH</string>
+        <string>SCRIPT_DIR/monitor.py</string>
+    </array>
+
+    <!-- Run once immediately on load, then every 60 seconds -->
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer>60</integer>
+
+    <!-- Restart if the script crashes -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>SCRIPT_DIR/monitor.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>SCRIPT_DIR/monitor_error.log</string>
+</dict>
+</plist>

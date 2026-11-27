@@ -1,0 +1,15 @@
+# Secret config — copy .env.example to .env and fill in your webhook
+.env
+
+# Generated at runtime
+power_log.db
+power_log.db-journal
+*.log
+report.png
+
+# Virtual environment — created by setup.sh, never commit this
+venv/
+
+# macOS
+.DS_Store
+.venv/
