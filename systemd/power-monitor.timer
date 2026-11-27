@@ -1,0 +1,15 @@
+[Unit]
+Description=Run Power Monitor every 60 seconds
+
+[Timer]
+OnBootSec=10s
+# Count from when the service goes inactive. After a boot, runs are skipped until
+# the clock syncs, so the service may never become active, and counting from
+# activation might never schedule the next try. This fires 60 seconds after a
+# run that finished or was skipped.
+OnUnitInactiveSec=60s
+# The default accuracy is 1 minute, which is too loose for a heartbeat.
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

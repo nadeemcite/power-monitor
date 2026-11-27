@@ -129,7 +129,8 @@ def plot_charts(outages: list, title: str = "Power Monitor — Outage Analysis")
         import matplotlib.dates as mdates
     except ImportError:
         print("matplotlib not installed — skipping charts.")
-        print("Install with: pip3 install matplotlib --break-system-packages")
+        print("Install with: venv/bin/python3 -m pip install -r requirements.txt")
+        print("Then run: venv/bin/python3 report.py")
         return
 
     if not outages:

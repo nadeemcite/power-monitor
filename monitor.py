@@ -2,13 +2,13 @@
 """
 Power Monitor
 =============
-Runs every 60 seconds via LaunchAgent. On each run it:
+Runs every 60 seconds (macOS LaunchAgent or Linux systemd timer). On each run it:
   1. Checks the gap since the last ping.
   2. If the gap > OUTAGE_THRESHOLD_SECONDS, records an outage and fires a Discord alert.
   3. Logs the current ping to SQLite.
 
-The Mac Mini must be running (and on power) for pings to land.
-A missing ping means the machine was off — i.e. no power.
+The machine must be running (and on power) for pings to land.
+A missing ping is treated as the machine being off, i.e. no power.
 """
 
 import sqlite3

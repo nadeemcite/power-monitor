@@ -1,0 +1,17 @@
+# Template. setup-linux.sh fills in the placeholders before installing it.
+[Unit]
+Description=Power Monitor heartbeat
+
+[Service]
+Type=oneshot
+User=@USER@
+Environment=PYTHONUNBUFFERED=1
+
+# After a boot, skip runs until the clock has synced once, so that a stale
+# clock is never written to the database. See clock-ready.sh.
+RuntimeDirectory=power-monitor
+RuntimeDirectoryPreserve=yes
+ExecCondition=/bin/sh "@DIR@/systemd/clock-ready.sh"
+
+ExecStart="@PYTHON@" "@DIR@/monitor.py"
+TimeoutStartSec=120
